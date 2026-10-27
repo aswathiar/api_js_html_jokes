@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <title>Joke Generator</title>
+  </head>
+
+  <body class="bg-pink-50 p-5">
+    <div class="mx-auto max-w-4xl">
+      <h1 class="mt-5 mb-3 text-center text-3xl font-bold text-pink-800">
+        Joke Generator
+      </h1>
+
+      <div class="my-6 rounded-lg bg-white p-6 shadow">
+        <h2 id="setup" class="mb-4 text-xl font-semibold text-gray-800"></h2>
+
+        <h2 id="punchline" class="mb-6 text-lg text-pink-700"></h2>
+
+        <button
+          onclick="getData()"
+          class="rounded-md bg-pink-600 px-5 py-2 text-white hover:bg-pink-700"
+        >
+          Generate Now
+        </button>
+
+        <button
+          onclick="AddtoFav()"
+          class="ml-2 rounded-md border border-pink-600 px-5 py-2 text-pink-700 hover:bg-pink-100"
+        >
+          AddtoFav
+        </button>
+      </div>
+
+      <hr class="my-6 border-pink-200" />
+
+      <h2 class="mb-4 text-2xl font-bold text-pink-800">Fav JOKES</h2>
+
+      <div class="overflow-x-auto rounded-lg bg-white">
+        <table class="w-full border-collapse text-left">
+          <thead class="bg-pink-100 text-pink-800">
+            <tr>
+              <th class="border border-pink-200 p-3">Setup</th>
+              <th class="border border-pink-200 p-3">Punchline</th>
+              <th class="border border-pink-200 p-3">Action</th>
+            </tr>
+          </thead>
+
+          <tbody id="result"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      let apiResponse = null;
+
+      let favData = JSON.parse(localStorage.getItem("data")) || [];
+
+      const getData = async () => {
+        try {
+          apiResponse = await fetch(
+            "https://official-joke-api.appspot.com/random_joke",
+          );
+
+          apiResponse = await apiResponse.json();
+
+          console.log(apiResponse);
+
+          document.getElementById("setup").innerText = apiResponse.setup;
+
+          document.getElementById("punchline").innerText =
+            apiResponse.punchline;
+        } catch (error) {
+          console.log(error);
+          alert("Error occurred");
+        }
+      };
+
+      getData();
+
+      const AddtoFav = () => {
+        favData = JSON.parse(localStorage.getItem("data")) || [];
+
+        favData.unshift(apiResponse);
+
+        let jsonData = JSON.stringify(favData);
+
+        localStorage.setItem("data", jsonData);
+
+        showFavData();
+
+        alert("Added");
+      };
+
+      const showFavData = () => {
+        favData = JSON.parse(localStorage.getItem("data")) || [];
+
+        let resultE1 = document.getElementById("result");
+
+        resultE1.innerHTML = "";
+
+        if (favData.length === 0) {
+          resultE1.innerHTML = `
+          <tr>
+            <td colspan="3" class="p-4 text-center text-gray-500">
+              No favourite jokes yet!
+            </td>
+          </tr>
+        `;
+          return;
+        }
+
+        favData.map((eachData, index) => {
+          resultE1.innerHTML += `
+            <tr class="hover:bg-pink-50">
+
+              <td class="border border-pink-200 p-3">
+                ${eachData.setup}
+              </td>
+
+              <td class="border border-pink-200 p-3">
+                ${eachData.punchline}
+              </td>
+
+              <td class="border border-pink-200 p-3">
+                <button
+                  onclick="deleteData(${index})"
+                  class="rounded bg-pink-600 px-3 py-1 text-white hover:bg-pink-700">
+                  Delete
+                </button>
+              </td>
+
+            </tr>
+          `;
+        });
+      };
+
+      const deleteData = (index) => {
+        favData = JSON.parse(localStorage.getItem("data")) || [];
+
+        favData.splice(index, 1);
+
+        localStorage.setItem("data", JSON.stringify(favData));
+
+        showFavData();
+
+        alert("Deleted");
+      };
+
+      showFavData();
+    </script>
+  </body>
+</html>
